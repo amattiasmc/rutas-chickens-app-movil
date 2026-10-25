@@ -1,98 +1,204 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import CampoFormulario from "../components/CampoFormulario";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function Login() {
+  const router = useRouter();
+
+  const [usuario, setUsuario] = useState("");
+  const [contrasena, setContrasena] = useState("");
+
+  const [errores, setErrores] = useState({
+    usuario: "",
+    contrasena: "",
+  });
+
+  const ingresar = () => {
+    const nuevosErrores = {
+      usuario: usuario.trim() ? "" : "El usuario es obligatorio.",
+      contrasena: contrasena.trim() ? "" : "La contraseña es obligatoria.",
+    };
+
+    setErrores(nuevosErrores);
+
+    if (nuevosErrores.usuario || nuevosErrores.contrasena) {
+      return;
+    }
+
+    router.replace({
+      pathname: "/home",
+      params: {
+        usuario: usuario.trim(),
+      },
+    });
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <KeyboardAvoidingView
+      style={styles.pantalla}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={styles.contenido}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.encabezado}>
+          <View style={styles.logo}>
+            <Text style={styles.icono}></Text>
+          </View>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+          <Text style={styles.nombreEmpresa}>RUTA'S CHICKENS</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <Text style={styles.eslogan}>Tu sabor favorito, más cerca de ti</Text>
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+        <View style={styles.tarjeta}>
+          <Text style={styles.titulo}>Bienvenido!</Text>
+
+          <Text style={styles.subtitulo}>
+            Inicia sesión para registrar tus pedidos.
+          </Text>
+
+          <CampoFormulario
+            etiqueta="Usuario"
+            placeholder="Ingresa tu usuario"
+            value={usuario}
+            onChangeText={(texto) => {
+              setUsuario(texto);
+              setErrores((anterior) => ({
+                ...anterior,
+                usuario: "",
+              }));
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            error={errores.usuario}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          <CampoFormulario
+            etiqueta="Contraseña"
+            placeholder="Ingresa tu contraseña"
+            value={contrasena}
+            onChangeText={(texto) => {
+              setContrasena(texto);
+              setErrores((anterior) => ({
+                ...anterior,
+                contrasena: "",
+              }));
+            }}
+            secureTextEntry
+            error={errores.contrasena}
+          />
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.boton,
+              pressed && styles.botonPresionado,
+            ]}
+            onPress={ingresar}
+            accessibilityRole="button"
+          >
+            <Text style={styles.textoBoton}>Ingresar</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  pantalla: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: "#FFF8EF",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  contenido: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 50,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  encabezado: {
+    alignItems: "center",
+    marginBottom: 30,
   },
-  title: {
-    textAlign: 'center',
+  logo: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#FDE8C7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
   },
-  code: {
-    textTransform: 'uppercase',
+  icono: {
+    fontSize: 50,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  nombreEmpresa: {
+    color: "#B71C1C",
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  eslogan: {
+    fontSize: 14,
+    color: "#795548",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  tarjeta: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 24,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+  titulo: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "#252525",
+    marginBottom: 8,
+  },
+  subtitulo: {
+    fontSize: 14,
+    color: "#777777",
+    lineHeight: 21,
+    marginBottom: 25,
+  },
+  boton: {
+    backgroundColor: "#B71C1C",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  botonPresionado: {
+    opacity: 0.8,
+  },
+  textoBoton: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+  pie: {
+    textAlign: "center",
+    color: "#9E9E9E",
+    fontSize: 12,
+    marginTop: 35,
   },
 });
